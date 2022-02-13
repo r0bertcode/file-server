@@ -10,7 +10,8 @@ use std::path::Path;
 use wither::mongodb::Client;
 use wither::{prelude::*, Result};
 
-use controller::file_system::create_folder;
+use controller::file_system::{create_folder, save_asset};
+use util::get_file_data;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -30,8 +31,13 @@ async fn main() -> Result<()> {
     Folder::sync(&db).await?;
     AccessGroup::sync(&db).await?;
 
-    let id = create_folder(&db, "first-folder", None).await.unwrap();
-    println!("{}", id);
+    // let id = create_folder(&db, "public", None).await.unwrap();
+    // println!("{}", id);
+
+    let file_data = get_file_data("./test_video.mp4").unwrap();
+    let asset_id = save_asset(&db, file_data, "my_video", "public", "mp4").await;
+
+    println!("{:?}", asset_id);
 
     Ok(())
 }

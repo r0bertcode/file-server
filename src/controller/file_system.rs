@@ -3,7 +3,7 @@ use crate::controller::error::ControllerError;
 use crate::data_models::{
     access_group::AccessGroup, asset::Asset, folder::Folder, key::Key, user::User,
 };
-use crate::util::{get_readable_timestamp, get_timestamp};
+use crate::util::{get_readable_timestamp, get_timestamp, get_uuid};
 use std::fs::*;
 use std::path::Path;
 use wither::{
@@ -96,22 +96,81 @@ pub async fn create_folder(
     Ok(doc_id.unwrap())
 }
 
-// pub async fn save_asset(
-//     db_ref: &Database,
-//     file_data: &[u8],
-//     folder_name: &str,
-//     extension: &str,
-// ) -> Result<(), ControllerError> {
-//     // format folder path and make sure it exists
-//     let folder_path = format!("{}/{}", ASSET_MAIN_PATH, folder_name);
-//     if !Path::new(&folder_path).exists() {
-//         return Err(ControllerError {
-//         io: None,
-//         wither: None,
-//         operation: Some(format!("ERROR: Bad operation, attempted to save asset at path {} but this folder doesn't exist!", folder_path))
-//       });
-//     }
+/**
+ * Controller to save an asset(file) on disk and associated DB data
+ */
+pub async fn save_asset(
+    db_ref: &Database,
+    file_data: Vec<u8>,
+    tag: &str,
+    folder_name: &str,
+    extension: &str,
+) -> Result<ObjectId, ControllerError> {
+    // format folder path and make sure it exists
+    let folder_path = format!("{}/{}", ASSET_MAIN_PATH, folder_name);
+    if !Path::new(&folder_path).exists() {
+        return Err(ControllerError {
+        io: None,
+        wither: None,
+        operation: Some(format!("ERROR: Bad operation, attempted to save asset at path {} but this folder doesn't exist!", folder_path))
+      });
+    }
 
-//     let asset_path = format!("{}/{}.{}", folder_path, )
-//     Ok(())
-// }
+    // Generate uuid and asset_path and asset in the very off chance, one with this uuid doesn't already exist there
+    let uuid = get_uuid();
+    let asset_path = format!("{}/{}.{}", folder_path, uuid, extension);
+    if Path::new(&asset_path).exists() {
+        return Err(ControllerError {
+        io: None,
+        wither: None,
+        operation: Some(format!("ERROR: Bad operation, attempted to save asset at path {}, but this asset already exists here!", asset_path))
+      });
+    }
+
+    // Get meta data for asset Doc
+    let timestamp_num = get_timestamp();
+    let timestamp = timestamp_num.to_string();
+    let timestamp_readable = get_readable_timestamp(timestamp_num);
+
+    let mut asset_doc = Asset {
+        id: None,
+        uuid,
+        tag: tag.to_string(),
+        path: asset_path.clone(),
+        timestamp,
+        timestamp_readable,
+    };
+
+    // Attempt to save asset doc
+    let save_result = asset_doc.save(db_ref, None).await;
+    if save_result.is_err() {
+        return Err(ControllerError {
+            io: None,
+            wither: save_result.err(),
+            operation: None,
+        });
+    }
+
+    // Attempt to get _id after save
+    let doc_id = asset_doc.id();
+    if doc_id.is_none() {
+        return Err(ControllerError {
+        io: None,
+        wither: None,
+        operation: Some("FATAL: Was unable to get folder docs _id field after saving in MongoDB succesfully..".to_string())
+      });
+    }
+
+    // Attempt to write data to disk to path
+    let write_result = write(asset_path, file_data);
+    if write_result.is_err() {
+        return Err(ControllerError {
+            io: write_result.err(),
+            wither: None,
+            operation: None,
+        });
+    }
+
+    // Return ObjectId if all goes well
+    Ok(doc_id.unwrap())
+}

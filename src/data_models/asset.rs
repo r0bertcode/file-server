@@ -8,7 +8,7 @@ use wither::Model;
  * ____________________________________________________________________________________________
  * id: MongoDB ObjectId,
  * path: Path to this asset on hard disk,
- * tags: Vec of tag strings to group this key with others or identify it by readable words
+ * tag: Tag of this asset to search or identify it
  * timestamp: When this Asset was creaed (stored in the DB)
  * timestamp_readable: Human readable timestamp of when created
  * ____________________________________________________________________________________________
@@ -19,7 +19,9 @@ pub struct Asset {
     pub id: Option<ObjectId>,
     #[model(index(index_type = "dsc", unique = "true"))]
     pub path: String,
-    pub tags: Vec<String>,
+    #[model(index(index_type = "dsc", unique = "true"))]
+    pub uuid: String,
+    pub tag: String,
     pub timestamp: String,
     pub timestamp_readable: String,
 }
