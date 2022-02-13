@@ -15,6 +15,16 @@ use wither::{
 };
 
 /**
+ * Get a u64 string timestamp and its human readable string counterpart
+ */
+pub fn get_doc_meta() -> (String, String) {
+    let timestamp_num = get_timestamp();
+    let timestamp = timestamp_num.to_string();
+    let timestamp_readable = get_readable_timestamp(timestamp_num);
+
+    (timestamp, timestamp_readable)
+}
+/**
  * Controller to create folder and associated DB operations
  */
 pub async fn create_folder(
@@ -45,9 +55,7 @@ pub async fn create_folder(
 
     let mut folder_doc;
     // Get meta data for folder Doc
-    let timestamp_num = get_timestamp();
-    let timestamp = timestamp_num.to_string();
-    let timestamp_readable = get_readable_timestamp(timestamp_num);
+    let (timestamp, timestamp_readable) = get_doc_meta();
 
     if start_access_group.is_none() {
         // If a starting access_group ObjectId is not provided, the folder will start as public
@@ -128,9 +136,7 @@ pub async fn save_asset(
     }
 
     // Get meta data for asset Doc
-    let timestamp_num = get_timestamp();
-    let timestamp = timestamp_num.to_string();
-    let timestamp_readable = get_readable_timestamp(timestamp_num);
+    let (timestamp, timestamp_readable) = get_doc_meta();
 
     let mut asset_doc = Asset {
         id: None,
