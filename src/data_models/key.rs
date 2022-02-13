@@ -9,6 +9,7 @@ use wither::Model;
  * uuid: Unique UUID v4 for identity
  * active: Bool for weither this key can be used or not ( If it is active or not )
  * timestamp: When this key was created
+ * timestamp_readable: Human readable timestamp of when created
  * ____________________________________________________________________________________________
  */
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -19,4 +20,5 @@ pub struct Key {
     pub uuid: String,
     pub active: bool,
     pub timestamp: String,
+    pub timestamp_readable: String,
 }

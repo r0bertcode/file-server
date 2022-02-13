@@ -10,6 +10,7 @@ use wither::Model;
  * path: Path to this asset on hard disk,
  * tags: Vec of tag strings to group this key with others or identify it by readable words
  * timestamp: When this Asset was creaed (stored in the DB)
+ * timestamp_readable: Human readable timestamp of when created
  * ____________________________________________________________________________________________
  */
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -20,4 +21,5 @@ pub struct Asset {
     pub path: String,
     pub tags: Vec<String>,
     pub timestamp: String,
+    pub timestamp_readable: String,
 }

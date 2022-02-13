@@ -9,6 +9,7 @@ use wither::Model;
  * tag: Tag to name this access group
  * allowed_keys: List of kets in this access_group, any user will be able to access this folder if they have a key in this list
  * timestamp: When the access group was created
+ * timestamp_readable: Human readable timestamp of when created
  * ____________________________________________________________________________________________
  */
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -19,4 +20,5 @@ pub struct AccessGroup {
     pub tag: String,
     pub allowed_keys: Vec<ObjectId>,
     pub timestamp: String,
+    pub timestamp_readable: String,
 }

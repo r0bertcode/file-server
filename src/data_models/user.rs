@@ -15,6 +15,7 @@ use wither::Model;
  * folder_admins: Vec of ObjectIds of folders this user has access to delete/edit
  * access_group_admins: Vec of ObjectIds of acces groups this user has access to delete/edit
  * timestamp: When this user was created
+ * timestamp_readable: Human readable timestamp of when created
  * ____________________________________________________________________________________________
  */
 #[derive(Debug, Model, Serialize, Deserialize)]
@@ -30,4 +31,5 @@ pub struct User {
     pub folder_admins: Vec<ObjectId>,
     pub access_group_admins: Vec<ObjectId>,
     pub timestamp: String,
+    pub timestamp_readable: String,
 }
