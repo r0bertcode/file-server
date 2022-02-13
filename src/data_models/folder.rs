@@ -14,6 +14,7 @@ use wither::Model;
  * access_groups: Vec of the ObjectIds of the AccessGroups of this folder ( Who can access this folder and its assets )
  * timestamp: When this folder was created
  * log_activity: A flag for if this flag should log its activity ( entries, deletions, access group changes )
+ * activity_log: A log map ( if log_activity is false is None ) of events on this folder ( Can be used for debugging or logging if you need it )
  * ____________________________________________________________________________________________
  */
 #[derive(Debug, Model, Serialize, Deserialize)]
