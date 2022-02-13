@@ -21,6 +21,8 @@ pub struct Folder {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     #[model(index(index_type = "dsc", unique = "true"))]
+    pub tag: String,
+    #[model(index(index_type = "dsc", unique = "true"))]
     pub path: String,
     pub files: Vec<ObjectId>,
     pub is_public: bool,

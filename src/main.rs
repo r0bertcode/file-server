@@ -8,17 +8,22 @@ use data_models::{access_group::AccessGroup, asset::Asset, folder::Folder, key::
 use std::fs::create_dir_all;
 use std::path::Path;
 use wither::mongodb::Client;
-use wither::{prelude::*, Result};
+use wither::{mongodb::bson::doc, prelude::*, Result};
 
-use controller::file_system::{create_folder, save_asset};
+use controller::{
+    auth::login_user,
+    file_system::{create_folder, create_user, save_asset},
+};
 use util::get_file_data;
+
+use crate::controller::file_system::create_sub_folder;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Create asset directory if not present
     if !Path::new(ASSET_MAIN_PATH).exists() {
         create_dir_all(ASSET_MAIN_PATH).expect(&format!(
-            "Fatal: Could not create required directory {}",
+            "ERROR: Could not create required directory {}",
             ASSET_MAIN_PATH
         ));
     }
@@ -31,11 +36,45 @@ async fn main() -> Result<()> {
     Folder::sync(&db).await?;
     AccessGroup::sync(&db).await?;
 
-    // let id = create_folder(&db, "public", None).await.unwrap();
-    // println!("{}", id);
+    //===================== TEST SECTION  ========================///
+    Key::delete_many(&db, doc! {}, None).await.unwrap();
+    User::delete_many(&db, doc! {}, None).await.unwrap();
+    Asset::delete_many(&db, doc! {}, None).await.unwrap();
+    Folder::delete_many(&db, doc! {}, None).await.unwrap();
+    AccessGroup::delete_many(&db, doc! {}, None).await.unwrap();
+
+    let user_doc = create_user(&db, "admin", "root").await.unwrap();
+
+    let user_doc = login_user(&db, "admin", "root").await.unwrap().unwrap();
+
+    let folder = create_folder(&db, &user_doc.id.as_ref().unwrap(), "admins", None, None)
+        .await
+        .unwrap();
+
+    let sub_folder = create_sub_folder(
+        &db,
+        &user_doc.id.as_ref().unwrap(),
+        &folder.path,
+        "admin-sub",
+        None,
+    )
+    .await
+    .unwrap();
+
+    let sub_sub_folder = create_sub_folder(
+        &db,
+        &user_doc.id.unwrap(),
+        &sub_folder.path,
+        "admin-sub-sub",
+        None,
+    )
+    .await
+    .unwrap();
 
     let file_data = get_file_data("./test_video.mp4").unwrap();
-    let asset_id = save_asset(&db, file_data, "my_video", "public", "mp4").await;
+    let asset_id = save_asset(&db, file_data, "my_video", &sub_sub_folder.path, "mp4")
+        .await
+        .unwrap();
 
     println!("{:?}", asset_id);
 

@@ -50,3 +50,13 @@ pub fn get_file_data(path: &str) -> Option<Vec<u8>> {
 
     Some(buff)
 }
+/**
+ * Get a u64 string timestamp and its human readable string counterpart
+ */
+pub fn get_time_meta() -> (String, String) {
+    let timestamp_num = get_timestamp();
+    let timestamp = timestamp_num.to_string();
+    let timestamp_readable = get_readable_timestamp(timestamp_num);
+
+    (timestamp, timestamp_readable)
+}
